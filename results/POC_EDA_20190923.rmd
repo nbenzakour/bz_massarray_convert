@@ -1,0 +1,251 @@
+---
+title: "POC_analysis_SEPT_2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Libraries
+#install.packages("heatmaply")
+#install.packages("tidyverse")
+
+```{r}
+library(dplyr)
+library(reshape)
+library(reshape2)
+library(ggplot2)
+library(knitr)
+library(heatmaply)
+library(plotly)
+library(gridExtra)
+```
+
+```{r}
+# Utility functions
+# JWilliman paste2 function allowing to skip NAs
+paste2 <- function(..., sep = " ", collapse = NULL, na.rm = F) {
+  if (na.rm == F)
+    paste(..., sep = sep, collapse = collapse)
+  else
+    if (na.rm == T) {
+      paste.na <- function(x, sep) {
+        x <- gsub("^\\s+|\\s+$", "", x)
+        ret <- paste(na.omit(x), collapse = sep)
+        is.na(ret) <- ret == ""
+        return(ret)
+      }
+      df <- data.frame(..., stringsAsFactors = F)
+      ret <- apply(df, 1, FUN = function(x) paste.na(x, sep))
+
+      if (is.null(collapse))
+        ret
+      else {
+        paste.na(ret, sep = collapse)
+      }
+    }
+}
+
+# Loading data
+
+setwd("~/REPOS/bz_massarray_convert/results")
+#collec <- read.csv2("POC_data_NBZ_Nov_2016.csv", header = TRUE, sep = ",", na.strings = "")
+collec <- read.csv2("results_ABC_NA-removed_with POCdata.csv", header = TRUE, sep = ",", na.strings = "")
+kable(summary(collec))
+```
+
+```{r}
+collec$Location <- factor(collec$Site, c("Beijing","Vietnam","Nepal","Singapore","Sydney","Italy", "UK", "New York", "Chicago", "Brazil"))
+pop <- xtabs(~ Species + Location, collec)
+kable(pop)
+```
+
+```{r}
+ggplot(collec, aes(Location, fill=Species)) + geom_bar(position = position_stack(reverse = TRUE)) + theme(axis.text.x=element_text(angle=60, hjust=1)) + ggtitle("Distribution of samples per countries by species")
+```
+
+```{r, fig.width=10, fig.height=10}
+p1 <- ggplot(collec, aes(Location, fill=X3GCR)) + geom_bar(position = position_stack(reverse = TRUE)) + facet_wrap(~ Species) + theme(axis.text.x=element_text(angle=60, hjust=1)) + ggtitle("Distribution of 3GCR alleles by country and species")
+
+p2 <- ggplot(collec, aes(Location, fill=GENR)) + geom_bar(position = position_stack(reverse = TRUE)) + facet_wrap(~ Species) + theme(axis.text.x=element_text(angle=60, hjust=1)) + ggtitle("Distribution of GENR alleles by country and species")
+
+grid.arrange(p1,p2,ncol=1)
+```
+
+```{r, fig.width=16, fig.height=8}
+ggplot(collec, aes(Location, fill=blaCTX.M)) + geom_bar(position = position_stack(reverse = TRUE)) + facet_wrap(~ Species) + theme(axis.text.x=element_text(angle=60, hjust=1)) + ggtitle("Distribution of CTX-M alleles by country and species")
+```
+
+```{r, fig.width=16, fig.height=8}
+xtabs(~blaCTX.M+Species, data=collec)
+```
+
+```{r, fig.width=16, fig.height=12}
+combined <- xtabs(~Location+blaCTX.M, data=collec)
+
+mosaicplot(combined, shade = TRUE, las=2, Title = "Representation of CTX-M alleles combinations depending on country")
+```
+
+```{r, fig.width=16, fig.height=8}
+ggplot(collec, aes(Location, fill=SHV)) + geom_bar(position = position_stack(reverse = TRUE)) + facet_wrap(~ Species) + theme(axis.text.x=element_text(angle=60, hjust=1)) + ggtitle("Distribution of SHV alleles by country and species")
+```
+
+```{r, fig.width=16, fig.height=8}
+ggplot(collec, aes(Location, fill=TEM)) + geom_bar(position = position_stack(reverse = TRUE)) + facet_wrap(~ Species) + theme(axis.text.x=element_text(angle=60, hjust=1)) + ggtitle("Distribution of TEM alleles by country and species")
+```
+
+```{r, fig.width=16, fig.height=8}
+ggplot(collec, aes(Location, fill=KPC)) + geom_bar(position = position_stack(reverse = TRUE)) + facet_wrap(~ Species) + theme(axis.text.x=element_text(angle=60, hjust=1)) + ggtitle("Distribution of KPC alleles by country and species")
+```
+
+```{r, fig.width=16, fig.height=8}
+ggplot(collec, aes(Location, fill=IMP)) + geom_bar(position = position_stack(reverse = TRUE)) + facet_wrap(~ Species) + theme(axis.text.x=element_text(angle=60, hjust=1)) + ggtitle("Distribution of IMP alleles by country and species")
+```
+
+```{r, fig.width=16, fig.height=8}
+ggplot(collec, aes(Location, fill=NDM)) + geom_bar(position = position_stack(reverse = TRUE)) + facet_wrap(~ Species) + theme(axis.text.x=element_text(angle=60, hjust=1)) + ggtitle("Distribution of NDM alleles by country and species")
+```
+
+```{r, fig.width=16, fig.height=8}
+ggplot(collec, aes(Location, fill=VIM)) + geom_bar(position = position_stack(reverse = TRUE)) + facet_wrap(~ Species) + theme(axis.text.x=element_text(angle=60, hjust=1)) + ggtitle("Distribution of VIM alleles by country and species")
+```
+
+```{r, fig.width=16, fig.height=8}
+ggplot(collec, aes(Location, fill=blaCMY.2.like)) + geom_bar(position = position_stack(reverse = TRUE)) + facet_wrap(~ Species) + theme(axis.text.x=element_text(angle=60, hjust=1)) + ggtitle("Distribution of CMY-2 alleles by country and species")
+```
+
+```{r, fig.width=16, fig.height=8}
+ggplot(collec, aes(Location, fill=DHA)) + geom_bar(position = position_stack(reverse = TRUE)) + facet_wrap(~ Species) + theme(axis.text.x=element_text(angle=60, hjust=1)) + ggtitle("Distribution of DHA alleles by country and species")
+```
+
+```{r, fig.width=10, fig.height=10}
+p1 <- ggplot(collec, aes(Location, fill=OXA.10)) + geom_bar(position = position_stack(reverse = TRUE)) + facet_wrap(~ Species) + theme(axis.text.x=element_text(angle=60, hjust=1)) + ggtitle("Distribution of OXA-10 alleles by country and species")
+p2 <- ggplot(collec, aes(Location, fill=OXA.30)) + geom_bar(position = position_stack(reverse = TRUE)) + facet_wrap(~ Species) + theme(axis.text.x=element_text(angle=60, hjust=1)) + ggtitle("Distribution of OXA-30 alleles by country and species")
+p3 <- ggplot(collec, aes(Location, fill=OXA.48)) + geom_bar(position = position_stack(reverse = TRUE)) + facet_wrap(~ Species) + theme(axis.text.x=element_text(angle=60, hjust=1)) + ggtitle("Distribution of OXA-48 alleles by country and species")
+#combine all OXA fields
+#collec$OXA <- paste2(collec[, 15:17], sep=" + ", na.rm = T)
+#ggplot(collec, aes(Location, fill=OXA)) + geom_bar(position = position_stack(reverse = TRUE)) + facet_wrap(~ Species) + theme(axis.text.x=element_text(angle=60, hjust=1)) + ggtitle("Distribution of OXA alleles by country and species")
+
+grid.arrange(p1,p2,p3,ncol=1)
+```
+
+```{r, fig.width=10, fig.height=10}
+p1 <- ggplot(collec, aes(Location, fill=aac.3..II)) + geom_bar(position = position_stack(reverse = TRUE)) + facet_wrap(~ Species) + theme(axis.text.x=element_text(angle=60, hjust=1)) + ggtitle("Distribution of aac.3.II alleles by country and species")
+
+p2 <- ggplot(collec, aes(Location, fill=aacA4)) + geom_bar(position = position_stack(reverse = TRUE)) + facet_wrap(~ Species) + theme(axis.text.x=element_text(angle=60, hjust=1)) + ggtitle("Distribution of aacA4 alleles by country and species")
+
+p3 <- ggplot(collec, aes(Location, fill=aadB)) + geom_bar(position = position_stack(reverse = TRUE)) + facet_wrap(~ Species) + theme(axis.text.x=element_text(angle=60, hjust=1))+ ggtitle("Distribution of aadB alleles by country and species")
+
+grid.arrange(p1,p2,p3,ncol=1)
+```
+
+```{r, fig.width=16, fig.height=8}
+ggplot(collec, aes(Location, fill=armA)) + geom_bar(position = position_stack(reverse = TRUE)) + facet_wrap(~ Species) + theme(axis.text.x=element_text(angle=60, hjust=1)) + ggtitle("Distribution of armA alleles by country and species")
+```
+
+```{r, fig.width=16, fig.height=12}
+collec <- cbind(collec,"total" = rowSums(!is.na(collec[7:30])))
+# boxplots
+p1 <- ggplot(collec, aes(y = total, x = Location)) + geom_boxplot(aes(fill = Location)) + facet_wrap(~ Species) + theme(axis.text.x=element_text(angle=60, hjust=1)) + ggtitle("Total number of alleles identified per strain, by country and species")
+# boxplots with jitters
+p2 <- ggplot(collec, aes(y = total, x = Location)) + geom_boxplot(aes(fill = Location)) + facet_wrap(~ Species) + geom_jitter() + theme(axis.text.x=element_text(angle=60, hjust=1))
+# violin plots
+#ggplot(collec, aes(y = total, x = Location)) + geom_violin(aes(fill = Location)) + facet_wrap(~ Species) + theme(axis.text.x=element_text(angle=60, hjust=1))
+# violin plots smoothing to reduce impact of using of discrete values
+#ggplot(collec, aes(y = total, x = Location)) + geom_violin(aes(fill = Location), adjust=1.5) + facet_wrap(~ Species) + theme(axis.text.x=element_text(angle=60, hjust=1))
+#require(gridExtra)
+grid.arrange(p1,p2,ncol=1)
+```
+
+```{r, fig.width=16, fig.height=12}
+#melt data on "Site" variable
+#collec.melt <- melt(cbind(collec[2],collec[6:14],collec[18:28],collec[30]), id.vars='Site')
+#skip OXA
+collec.melt <- melt(cbind(collec[2],collec[7:20],collec[24:30]), id.vars='Site')
+#head(collec.melt)
+ggplot(collec.melt, aes(variable, fill=value))+geom_bar(position = position_stack(reverse = TRUE)) + facet_wrap(~ Site, scales="free_x") + theme(axis.text.x=element_text(angle=60, hjust=1)) + theme(legend.position="none") + ggtitle("Distribution of alleles by alleles types and by country")
+```
+
+```{r, fig.width=10, fig.height=6}
+#build profile by concatenating all alleles into one "profile" field
+#collec_profile <- cbind(collec[1], collec[29], collec[3:5],"profile" = paste2(collec[,6:28], sep= " + ", na.rm = T))
+collec_profile <- cbind(collec[1], collec[31], collec[3:5],"profile" = paste2(collec[,7:30], sep= " + ", na.rm = T))
+#summary(collec_profile)
+#freq. distribution of profiles by location and species
+profile_summary <- as.data.frame(with(collec_profile, table(profile, Location, Species)))
+#exclude empty profiles = isolates with no alleles found
+profile_present <- filter(profile_summary, Freq > 0)
+profile_present <- arrange(profile_present, Location, Species, desc(Freq))
+p <- ggplot(profile_present, aes(x = Location, y = Species, fill = Location)) + geom_jitter(aes(size=Freq, alpha=1, colour= Location)) + scale_size_area(max_size = 10) + theme(axis.text.x=element_text(angle=30, hjust=1))+ ggtitle("Number of representative strains per unique profile, by country and species")
+#ggplotly(p, tooltip = c("Freq", "Location", "Species"))
+p
+```
+
+```{r, fig.width=12, fig.height=16}
+#freq. distribution of profiles by location for E. coli
+profile_present_eco <- (filter(profile_present, Species == "E. coli"))
+#freq. distribution of profiles by location for K. pneumoniae
+profile_present_kp <- (filter(profile_present, Species == "K. pneumoniae"))
+p1 <- ggplot(profile_present_eco, aes(Freq, fill=profile)) + geom_bar(position = position_stack(reverse = TRUE)) + facet_wrap(~ Location, scales="free_x") + theme(axis.text.x=element_text(angle=60, hjust=1)) + theme(legend.position="none") + ggtitle("Distribution of profiles in relation to their occurence in E. coli, by country")
+p2 <- ggplot(profile_present_kp, aes(Freq, fill=profile)) + geom_bar(position = position_stack(reverse = TRUE)) + facet_wrap(~ Location, scales="free_x") + theme(axis.text.x=element_text(angle=60, hjust=1)) + theme(legend.position="none") + ggtitle("Distribution of profiles in relation to their occurence in K. pneumoniae, by country")
+
+grid.arrange(p1,p2,ncol=1)
+```
+
+```{r, fig.width=12, fig.height=8}
+profile_summary2<- as.data.frame(with(collec_profile, table(profile, Species)))
+#freq. distribution of profiles by location
+profile_present2 <- filter(profile_summary2, Freq > 0)
+profile_present2 <- arrange(profile_present2, Species, desc(Freq))
+summary(profile_present2)[8:9]
+
+```
+
+```{r, fig.width=12, fig.height=8}
+ggplot(profile_present2, aes(Freq, fill=profile)) + geom_histogram(binwidth = 1) + facet_wrap(~ Species, scales="fixed") + theme(axis.text.x=element_text(angle=60, hjust=1)) + theme(legend.position="none") + ggtitle("Distribution of unique profiles in relation to their number of occurence by species")
+```
+
+```{r, fig.width=16, fig.height=8}
+kable(filter(profile_present2, Species == "E. coli")[1:20,c(1,3)])
+```
+
+
+
+```{r, fig.width=12, fig.height=6}
+collec$X3GCGENR <- paste2(collec[, 4:5], sep=" + ", na.rm = T)
+ggplot(collec, aes(Location, fill=X3GCGENR)) + geom_bar(position = position_stack(reverse = TRUE)) + facet_wrap(~ Species) + theme(axis.text.x=element_text(angle=60, hjust=1)) + ggtitle("Distribution of 3GC + GENR combined phenotypes by country and species") + scale_fill_manual("legend", values = c("R" = "grey", "R + R" = "red", "R + S" = "orange", "S + R" = "orange", "S + S" = "yellow", "S" = "grey"))
+```
+```{r, fig.width=12, fig.height=6}
+combined <- xtabs(~Location+X3GCGENR, data=collec)
+combined
+```
+
+
+
+```{r, fig.width=10, fig.height=10}
+presabs <- acast(collec.melt, value~Site, value.var="variable")
+```
+
+```{r, fig.width=10, fig.height=10}
+presabs_df <- as.data.frame(presabs)
+
+
+# Heatmap showing numbers for each allele in each country
+heatmaply(head(presabs_df,-2))
+
+```
+
+```{r, fig.width=10, fig.height=10}
+# Heatmap showing presence absence
+
+class_to <- function(x, new_class) {
+  class(x) <- new_class
+  x
+}
+
+na_mat <- function(x) {
+  x %>% is.na %>% class_to("numeric") 
+}
+
+head(presabs,-2) %>% na_mat %>% heatmaply(color = c("white","black"), grid_color = "grey", k_col =3, k_row = 3, margins = c(70, 300))
+```
